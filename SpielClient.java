@@ -3,14 +3,14 @@
  * @author 
  * @version 
  */
-public class Test
+public class SpielClient
 {
     // Bezugsobjekte
-//igdfiosayda
+
     // Attribute
 
     // Konstruktor
-    public Test()
+    public SpielClient()
     {
 
     }
