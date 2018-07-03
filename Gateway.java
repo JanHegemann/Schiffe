@@ -3,14 +3,14 @@
  * @author 
  * @version 
  */
-public class Test
+public class Gateway
 {
     // Bezugsobjekte
-//igdfiosayda
+
     // Attribute
 
     // Konstruktor
-    public Test()
+    public Gateway()
     {
 
     }
