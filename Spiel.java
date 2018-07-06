@@ -8,27 +8,43 @@
 public class Spiel
 {
     // Instanzvariablen - ersetzen Sie das folgende Beispiel mit Ihren Variablen
-    private String clientIP;
-    private int clientPort;
-    private int zahl;
-    private int versuche;
-    private String name;
+    private String clientIP,client2IP;
+    private int clientPort,client2Port;
+    private Integer[][] spielfeld11,spielfeld12,spielfeld21,spielfeld22;
 
     /**
      * Konstruktor für Objekte der Klasse Spsieler
      */
-    public Spiel(String clientIP, int clientPort, int zahl, String name)
+    public Spiel(String clientIP, int clientPort,String client2IP, int client2Port)
     {
         this.clientIP = clientIP;
         this.clientPort = clientPort;
-        this.zahl = zahl;
-        this.versuche = 0;
-        this.name = name;
+        this.client2IP = clientIP;
+        this.client2Port = clientPort;
+        spielfeld11=new Integer[10][10];
+        spielfeld12=new Integer[10][10];
+        spielfeld21=new Integer[10][10];
+        spielfeld22=new Integer[10][10];
     }
 
-    public int gibZahl()
+    public Integer[][] gibSpielfeld11()
     {
-        return this.zahl;
+        return this.spielfeld11;
+    }
+    
+    public Integer[][] gibSpielfeld12()
+    {
+        return this.spielfeld11;
+    }
+    
+    public Integer[][] gibSpielfeld21()
+    {
+        return this.spielfeld11;
+    }
+    
+    public Integer[][] gibSpielfeld22()
+    {
+        return this.spielfeld11;
     }
 
     public String gibClientIP()
@@ -40,24 +56,16 @@ public class Spiel
     {
         return this.clientPort;
     }
-
-    public int gibVersuche()
+    
+    public String gibClientIP2()
     {
-        return this.versuche;
+        return this.client2IP;
     }
 
-    public String gibName()
+    public int gibClientPort2()
     {
-        return this.name;
+        return this.client2Port;
     }
 
-    public void setzeName(String name)
-    {
-        this.name = name;
-    }
-
-    public void erhoeheVeruche()
-    {
-        versuche = versuche  + 1;
-    }
+    
 }
