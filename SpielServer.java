@@ -35,81 +35,56 @@ public class SpielServer extends Server {
      * Der angemeldete Client bekommt die gesendete Meldung zurueckgeschickt.
      */
     public void processMessage(String pClientIP, int pClientPort, String pMessage){ 
-        boolean status = false;
-        String test = pMessage.toLowerCase();
-
-        String[] sqlbefehle = {"CREATE", "RENAME", "ALTER", "DROP", "INSERT", "UPDATE", "DELETE"};
-        for(int i=0; i<sqlbefehle.length && status == false; i++){
-            String comp = sqlbefehle[i].toLowerCase();
-            if(test.contains(comp)){
-                status = true;
-                break;
-            }
-        }
-
-        char[] sonderzeichen = {'!', '"', '§', '%', '&', '/', '(', ')', '=', '?', '\\', '*', '+', '~', '#'};
-        for(int i=0; i<sonderzeichen.length && status == false; i++){
-            if(test.indexOf(sonderzeichen[i]) != -1){
-                status = true;
-                break;
-            }
-        }
-
-        if(status ==true)
-            this.send(pClientIP, pClientPort, "SQL");
-
-        if(status = false){
-            switch(gibBefehlsbereich(pMessage))
+        switch(gibBefehlsbereich(pMessage))
+        {
+            case "PLY": //Spielen
             {
-                case "PLY": //Spielen
+                spieleOnline.append(new Spiel(pClientIP, pClientPort, gibZufallszahl(), gibTextbereich(pMessage,0)));
+                this.send(pClientIP, pClientPort, "PLY Hallo "+this.gibNameVonSpiel(pClientIP, pClientPort)+", raten Sie eine Zahl zwischen 0 und 20!");
+                break;
+            }
+            case "SND": //Zahl gesendet
+            {
+                if(istSpielOnline(pClientIP, pClientPort))
                 {
-                    spieleOnline.append(new Spiel(pClientIP, pClientPort, gibZufallszahl(), gibTextbereich(pMessage,0)));
-                    this.send(pClientIP, pClientPort, "PLY Hallo "+this.gibNameVonSpiel(pClientIP, pClientPort)+", raten Sie eine Zahl zwischen 0 und 20!");
-                    break;
-                }
-                case "SND": //Zahl gesendet
-                {
-                    if(istSpielOnline(pClientIP, pClientPort))
+                    this.versucheErhoehenVonSpiel(pClientIP, pClientPort);
+                    if(Integer.parseInt(gibTextbereich(pMessage,0)) == this.gibZahlVonSpiel(pClientIP, pClientPort))
                     {
-                        this.versucheErhoehenVonSpiel(pClientIP, pClientPort);
-                        if(Integer.parseInt(gibTextbereich(pMessage,0)) == this.gibZahlVonSpiel(pClientIP, pClientPort))
-                        {
-                            DBhighscore.hinzufuegen(this.gibNameVonSpiel(pClientIP, pClientPort), this.gibVersucheVonSpiel(pClientIP, pClientPort));
-                            this.send(pClientIP, pClientPort, "POS Super, Sie haben das Spiel mit "+gibVersucheVonSpiel(pClientIP, pClientPort)+" Versuchen gewonnen!");
-                        }
-                        else
-                        {
-                            if(Integer.parseInt(gibTextbereich(pMessage,0)) < this.gibZahlVonSpiel(pClientIP, pClientPort))
-                            {
-                                this.send(pClientIP, pClientPort, "NEG Leider falsch, versuchen Sie es noch einmal! Die gesuchte Zahl ist größer!");
-                            }
-                            else
-                            {
-                                this.send(pClientIP, pClientPort, "NEG Leider falsch, versuchen Sie es noch einmal! Die gesuchte Zahl ist kleiner!");
-                            }
-                        }
+                        DBhighscore.hinzufuegen(this.gibNameVonSpiel(pClientIP, pClientPort), this.gibVersucheVonSpiel(pClientIP, pClientPort));
+                        this.send(pClientIP, pClientPort, "POS Super, Sie haben das Spiel mit "+gibVersucheVonSpiel(pClientIP, pClientPort)+" Versuchen gewonnen!");
                     }
                     else
                     {
-                        this.send(pClientIP, pClientPort, "ERR Sie haben noch kein Spiel gestartet!");
+                        if(Integer.parseInt(gibTextbereich(pMessage,0)) < this.gibZahlVonSpiel(pClientIP, pClientPort))
+                        {
+                            this.send(pClientIP, pClientPort, "NEG Leider falsch, versuchen Sie es noch einmal! Die gesuchte Zahl ist größer!");
+                        }
+                        else
+                        {
+                            this.send(pClientIP, pClientPort, "NEG Leider falsch, versuchen Sie es noch einmal! Die gesuchte Zahl ist kleiner!");
+                        }
                     }
-                    break;
                 }
-                case "HSC": //Highscoreliste mit den 10 Besten zurückgeben
+                else
                 {
-                    this.send(pClientIP, pClientPort, "HSC "+generiereStringAusListe(DBhighscore.holeZehn()));
-                    break;
+                    this.send(pClientIP, pClientPort, "ERR Sie haben noch kein Spiel gestartet!");
                 }
-                case "EXIT": //Der Client möchte sich abmelden
-                {
-                    this.send(pClientIP, pClientPort, "EXIT complete");
-                    break;
-                }
-                default:
-                {
-                    this.send(pClientIP, pClientPort, "ERR Befehl nicht bekannt!");
-                    break;
-                }
+                break;
+            }
+            case "HSC": //Highscoreliste mit den 10 Besten zurückgeben
+            {
+                this.send(pClientIP, pClientPort, "HSC "+generiereStringAusListe(DBhighscore.holeZehn()));
+                break;
+            }
+            case "EXIT": //Der Client möchte sich abmelden
+            {
+                this.send(pClientIP, pClientPort, "EXIT complete");
+                break;
+            }
+            default:
+            {
+                this.send(pClientIP, pClientPort, "ERR Befehl nicht bekannt!");
+                break;
             }
         }
     }
@@ -129,15 +104,6 @@ public class SpielServer extends Server {
     public static void main(String [] args)
     {
         SpielServer es = new SpielServer(2000);
-    }
-
-    /**
-     * Methode, die bei Aufruf eine Zufallszahl zwischen 0 und 20 zurück gibt.
-     * @return Zufallszahl
-     */
-    private synchronized int gibZufallszahl()
-    {
-        return (int)(Math.random() * 20);
     }
 
     /**
