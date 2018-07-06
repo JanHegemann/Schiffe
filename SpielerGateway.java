@@ -31,7 +31,7 @@ public class SpielerGateway
         verbinde();
         db.executeStatement("SELECT * FROM spieler WHERE id ="+id);
         QueryResult ergebnis = db.getCurrentQueryResult();
-        Spieler erg = new Spieler(ergebnis.getData()[0][0], ergebnis.getData()[0][1], ergebnis.getData()[0][2]);
+        Spieler erg = new Spieler(ergebnis.getData()[0][0], ergebnis.getData()[0][1], ergebnis.getData()[0][2], ergebnis.getData()[0][3], Integer.parseInt(ergebnis.getData()[0][4]));
         beende();
         return erg;
     }
@@ -51,7 +51,7 @@ public class SpielerGateway
         {
             for(int i = 0; i < ergebnis.getRowCount(); i++)
             {
-                spieler.append(new Spieler(ergebnis.getData()[i][0], ergebnis.getData()[i][1], ergebnis.getData()[i][2]));
+                spieler.append(new Spieler(ergebnis.getData()[i][0], ergebnis.getData()[i][1], ergebnis.getData()[i][2], ergebnis.getData()[0][3], Integer.parseInt(ergebnis.getData()[0][4])));
             }
         }
         beende();
@@ -114,10 +114,10 @@ public class SpielerGateway
      * @param name
      * @param punkte
      */
-    public void hinzufuegen(String name, String passwort)
+    public void hinzufuegen(String name, String passwort,String pClientIp, int pClientPort)
     {
         verbinde();
-        String sql = "INSERT INTO spieler (name, passwort) VALUES ('"+name+"', "+passwort+")";
+        String sql = "INSERT INTO spieler (name, passwort,clientIp,clientPort) VALUES ('"+name+"', "+passwort+", "+pClientIp+", "+pClientPort+")";
         System.out.println(sql);
         db.executeStatement(sql);
         beende();
@@ -142,10 +142,10 @@ public class SpielerGateway
      * @param name
      * @param punkte
      */
-    public void aktualisiere(String id, String name, int passwort)
+    public void aktualisiere(int id, String name, String passwort,String pClientIp, int pClientPort)
     {
         verbinde();
-        db.executeStatement("UPDATE spieler SET name = '"+name+"', passwort = "+passwort+" WHERE id = "+id);
+        db.executeStatement("UPDATE spieler SET name = '"+name+"', passwort = "+passwort+",clientIp = "+pClientIp+",clientPort = "+pClientPort+" WHERE id = "+id);
         beende();
     }
     
@@ -155,7 +155,7 @@ public class SpielerGateway
     public void erzeugeTabelle()
     {
          verbinde();
-         db.executeStatement("Create table if not exists spieler (id INTEGER PRIMARY KEY AUTOINCREMENT, name Varchar(255), passwort Varchar(255))");
+         db.executeStatement("Create table if not exists spieler (id INTEGER PRIMARY KEY AUTOINCREMENT, name Varchar(255), passwort Varchar(255),clientIp Varchar(255) clientPort int)");
          beende();
     }
     
