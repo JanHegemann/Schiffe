@@ -22,7 +22,9 @@ public class Spiel
         this.client2IP = clientIP;
         this.client2Port = clientPort;
         spielfeld11=new Integer[10][10];
-        
+        spielfeld12=new Integer[10][10];
+        spielfeld21=new Integer[10][10];
+        spielfeld22=new Integer[10][10];
     }
 
     public Integer[][] gibSpielfeld11()
