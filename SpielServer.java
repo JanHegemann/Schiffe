@@ -35,12 +35,17 @@ public class SpielServer extends Server {
      * Der angemeldete Client bekommt die gesendete Meldung zurueckgeschickt.
      */
     public void processMessage(String pClientIP, int pClientPort, String pMessage){ 
+        String c1i = pClientIP;
+        int c1p = pClientPort;
+        String c2i = gibTextbereich(pMessage,0);
+        int c2p = gibTextbereich(pMessage,1);
         switch(gibBefehlsbereich(pMessage))
         {
+            
             case "PLY": //Spielen
             {
-                spieleOnline.append(new Spiel(pClientIP, pClientPort, gibZufallszahl(), gibTextbereich(pMessage,0)));
-                this.send(pClientIP, pClientPort, "PLY Hallo "+this.gibNameVonSpiel(pClientIP, pClientPort)+", raten Sie eine Zahl zwischen 0 und 20!");
+                spieleOnline.append(new Spiel(pClientIP, pClientPort, c1i, c1p));
+                this.send(pClientIP, pClientPort, "PLY Hallo "+this.gibNameVonSpiel(c1i, c1p)+", Sie spielen jetzt mit " +this.gibNameVonSpiel(c2i, c2p) + "!");
                 break;
             }
             case "SND": //Zahl gesendet
