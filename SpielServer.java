@@ -10,7 +10,7 @@ public class SpielServer extends Server {
 
     private HighscoreGateway DBhighscore;
     private SpielerGateway DBspieler;
-    private List<Spiel> spieleOnline;
+    private List<Game> spieleOnline;
 
     public SpielServer(int p) {
         super(p);
@@ -35,45 +35,13 @@ public class SpielServer extends Server {
      * Der angemeldete Client bekommt die gesendete Meldung zurueckgeschickt.
      */
     public void processMessage(String pClientIP, int pClientPort, String pMessage){ 
-        String c1i = pClientIP;
-        int c1p = pClientPort;
-        String c2i = gibTextbereich(pMessage,0);
-        int c2p = gibTextbereich(pMessage,1);
         switch(gibBefehlsbereich(pMessage))
-        {
-            
+        {        
             case "PLY": //Spielen
             {
-                spieleOnline.append(new Spiel(pClientIP, pClientPort, c1i, c1p));
-                this.send(pClientIP, pClientPort, "PLY Hallo "+this.gibNameVonSpiel(c1i, c1p)+", Sie spielen jetzt mit " +this.gibNameVonSpiel(c2i, c2p) + "!");
-                break;
-            }
-            case "SND": //Zahl gesendet
-            {
-                if(istSpielOnline(pClientIP, pClientPort))
-                {
-                    this.versucheErhoehenVonSpiel(pClientIP, pClientPort);
-                    if(Integer.parseInt(gibTextbereich(pMessage,0)) == this.gibZahlVonSpiel(pClientIP, pClientPort))
-                    {
-                        DBhighscore.hinzufuegen(this.gibNameVonSpiel(pClientIP, pClientPort), this.gibVersucheVonSpiel(pClientIP, pClientPort));
-                        this.send(pClientIP, pClientPort, "POS Super, Sie haben das Spiel mit "+gibVersucheVonSpiel(pClientIP, pClientPort)+" Versuchen gewonnen!");
-                    }
-                    else
-                    {
-                        if(Integer.parseInt(gibTextbereich(pMessage,0)) < this.gibZahlVonSpiel(pClientIP, pClientPort))
-                        {
-                            this.send(pClientIP, pClientPort, "NEG Leider falsch, versuchen Sie es noch einmal! Die gesuchte Zahl ist größer!");
-                        }
-                        else
-                        {
-                            this.send(pClientIP, pClientPort, "NEG Leider falsch, versuchen Sie es noch einmal! Die gesuchte Zahl ist kleiner!");
-                        }
-                    }
-                }
-                else
-                {
-                    this.send(pClientIP, pClientPort, "ERR Sie haben noch kein Spiel gestartet!");
-                }
+                spieleOnline.append(new Game(gibTextbereich(pMessage,0),pClientIP, pClientPort,gibTextbereich(pMessage,1),DBspieler.holeIP(gibTextbereich(pMessage,1)),DBspieler.holePort(gibTextbereich(pMessage,1))));
+                this.send(pClientIP, pClientPort, "PLY Hallo "+gibTextbereich(pMessage,0)+", Sie spielen jetzt mit " +gibTextbereich(pMessage,1)+ "!");
+                this.send(DBspieler.holeIP(gibTextbereich(pMessage,1)),DBspieler.holePort(gibTextbereich(pMessage,1)), "PLY Hallo "+gibTextbereich(pMessage,1)+", Sie spielen jetzt mit " +gibTextbereich(pMessage,0)+ "!");
                 break;
             }
             case "HSC": //Highscoreliste mit den 10 Besten zurückgeben
@@ -154,7 +122,7 @@ public class SpielServer extends Server {
         spieleOnline.toFirst();
         while(spieleOnline.hasAccess())
         {
-            if(spieleOnline.getContent().gibClientIP().equals(pClientIP) && spieleOnline.getContent().gibClientPort() == pClientPort)
+            if(spieleOnline.getContent().getClientIP(1).equals(pClientIP) && spieleOnline.getContent().getClientPort(1) == pClientPort)
             {
                 spieleOnline.remove();
                 break;
@@ -163,87 +131,6 @@ public class SpielServer extends Server {
             {
                 spieleOnline.next();
             }
-        }
-    }
-
-    /**
-     * Methode, die die zu erratende Zahl vom Spiel mit der übergebenen ClientIP zurück gibt.
-     * @param pClientIP
-     * @return zu erratende Zahl
-     */
-    private synchronized int gibZahlVonSpiel(String pClientIP, int pClientPort)
-    {
-        Spiel erg = null;
-        spieleOnline.toFirst();
-        while(spieleOnline.hasAccess())
-        {
-            if(spieleOnline.getContent().gibClientIP().equals(pClientIP) && spieleOnline.getContent().gibClientPort() == pClientPort)
-            {
-                erg = spieleOnline.getContent();
-                break;
-            }
-            spieleOnline.next();
-        }
-        return erg.gibZahl();
-    }
-
-    /**
-     * Methode, die die zu erratende Zahl vom Spiel mit der übergebenen ClientIP zurück gibt.
-     * @param pClientIP
-     * @return zu erratende Zahl
-     */
-    private synchronized String gibNameVonSpiel(String pClientIP, int pClientPort)
-    {
-        Spiel erg = null;
-        spieleOnline.toFirst();
-        while(spieleOnline.hasAccess())
-        {
-            if(spieleOnline.getContent().gibClientIP().equals(pClientIP) && spieleOnline.getContent().gibClientPort() == pClientPort)
-            {
-                erg = spieleOnline.getContent();
-                break;
-            }
-            spieleOnline.next();
-        }
-        return erg.gibName();
-    }
-
-    /**
-     * Methode, die die Anzahl der bisherigen Versuche vom Spiel mit der übergebenen ClientIP zurück gibt.
-     * @param pClientIP
-     * @return bisherige Versuche
-     */
-    private synchronized int gibVersucheVonSpiel(String pClientIP, int pClientPort)
-    {
-        int erg = 20;
-        spieleOnline.toFirst();
-        while(spieleOnline.hasAccess())
-        {
-            if(spieleOnline.getContent().gibClientIP().equals(pClientIP) && spieleOnline.getContent().gibClientPort() == pClientPort)
-            {
-                erg = spieleOnline.getContent().gibVersuche();
-                break;
-            }
-            spieleOnline.next();
-        }
-        return erg;
-    }
-
-    /**
-     * Methode, die beim Spiel mit der übergebenen Client-IP, die Versuche um 1 erhöht.
-     * @param pClientIP
-     */
-    private synchronized void versucheErhoehenVonSpiel(String pClientIP, int pClientPort)
-    {
-        spieleOnline.toFirst();
-        while(spieleOnline.hasAccess())
-        {
-            if(spieleOnline.getContent().gibClientIP().equals(pClientIP) && spieleOnline.getContent().gibClientPort() == pClientPort)
-            {
-                spieleOnline.getContent().erhoeheVeruche();
-                break;
-            }
-            spieleOnline.next();
         }
     }
 
@@ -258,7 +145,7 @@ public class SpielServer extends Server {
         spieleOnline.toFirst();
         while(spieleOnline.hasAccess())
         {
-            if(spieleOnline.getContent().gibClientIP().equals(pClientIP) && spieleOnline.getContent().gibClientPort() == pClientPort)
+            if(spieleOnline.getContent().getClientIP(1).equals(pClientIP) && spieleOnline.getContent().getClientPort(1) == pClientPort)
             {
                 return true;
             }

@@ -26,12 +26,31 @@ public class SpielerGateway
      * 
      * @return Eintragobjekt mit passender id oder null
      */
-    public Spieler hole(int id)
+    public Player hole(int id)
     {
         verbinde();
         db.executeStatement("SELECT * FROM spieler WHERE id ="+id);
         QueryResult ergebnis = db.getCurrentQueryResult();
-        Spieler erg = new Spieler(ergebnis.getData()[0][0], ergebnis.getData()[0][1], ergebnis.getData()[0][2], ergebnis.getData()[0][3], Integer.parseInt(ergebnis.getData()[0][4]));
+        Player erg = new Player(ergebnis.getData()[0][0], ergebnis.getData()[0][1], Integer.parseInt(ergebnis.getData()[0][2]));
+        beende();
+        return erg;
+    }
+    
+        public String holeIP(String name)
+    {
+        verbinde();
+        db.executeStatement("SELECT clientIp FROM spieler WHERE name ="+name);
+        QueryResult ergebnis = db.getCurrentQueryResult();
+        beende();
+        return ergebnis.getData()[0][0];
+    }
+    
+         public int holePort(String name)
+    {
+        verbinde();
+        db.executeStatement("SELECT clientPort FROM spieler WHERE name ="+name);
+        QueryResult ergebnis = db.getCurrentQueryResult();
+        int erg=Integer.parseInt(ergebnis.getData()[0][0]);
         beende();
         return erg;
     }
@@ -41,17 +60,17 @@ public class SpielerGateway
      * 
      * @return Liste aller Einträge
      */
-    public List<Spieler> holeAlle()
+    public List<Player> holeAlle()
     {
         verbinde();
-        List <Spieler> spieler = new List();
+        List <Player> spieler = new List();
         db.executeStatement("Select id, name, passwort from spieler ORDER BY name ASC");
         QueryResult ergebnis = db.getCurrentQueryResult();
         if(ergebnis != null)
         {
             for(int i = 0; i < ergebnis.getRowCount(); i++)
             {
-                spieler.append(new Spieler(ergebnis.getData()[i][0], ergebnis.getData()[i][1], ergebnis.getData()[i][2], ergebnis.getData()[0][3], Integer.parseInt(ergebnis.getData()[0][4])));
+                spieler.append(new Player(ergebnis.getData()[i][0], ergebnis.getData()[i][1], Integer.parseInt(ergebnis.getData()[0][2])));
             }
         }
         beende();
